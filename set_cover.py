@@ -52,12 +52,26 @@ def get_covered(S, N, n_verts):
     """
     N = np.transpose(N)
     covered = np.zeros(n_verts)
-    for set_number in S:
+    for set_num in S:
         for i in range(n_verts):
-            if N[set_number][i] == 1:
+            if N[set_num][i] == 1:
                 covered[i] = 1
 
     return covered
+
+def calculate_cost(S, c):
+    """Return the cost for the set cover.
+    
+    Arguments:
+        S -- Collection of sets.
+        c -- Set cost vector.
+    """
+
+    cost = 0
+    for set_num in S:
+        cost += c[set_num]
+
+    return cost
 
 
 def solve(c, N):
@@ -79,7 +93,7 @@ def solve(c, N):
 
     # Set precision on float arrays to 3
     np.set_printoptions(precision=3)
-
+    
     while np.count_nonzero(covered) != n_verts:
         # Get uncovered element
         uncovered_vertex = np.where(covered==0)[0][0]
@@ -95,4 +109,6 @@ def solve(c, N):
         covered = get_covered(S, N, n_verts)
         # Print solutions after every iteration
         print(y, "\n", x, "\n\n", sep="")
+    cover_cost = calculate_cost(S, c)
+    print("Set cover cost:", cover_cost)
 
