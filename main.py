@@ -12,9 +12,6 @@ import numpy as np
 import set_cover as sc
 import ford_fulkerson as ff
 
-# TODO
-# - Collapse read_file in one procedure
-
 def main(argv):
     if not argv:
         print("usage: main.py set|flow input_file")
@@ -26,6 +23,7 @@ def main(argv):
             sc.solve(*results)
         elif algorithm == "flow":
             ff.solve(*results)
+            pass
         else:
             print("Error")
 

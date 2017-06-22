@@ -10,56 +10,85 @@ __version__ = "3.0"
 import sys
 import numpy as np
 
-def create_weighted_matrix(c, N):
-    """Creates matrix with weights based in arch capacity and arch connections.
+# TODO
+# - Implement return edge flow = -1 * edge flow
+
+def find_dest(e, s, N):
+    """Find destination for edge e.
     
     Arguments:
-        c -- Arch capacity vector.
-        N -- Incidence matrix.
+        e -- [description]
+        N -- [description]
     """
 
-    vertex_num = N.shape[0]
-    # Weighted matrix
-    G = np.zeros((vertex_num, vertex_num))
+    for v in range(N.shape[0]):
+        if N[v][e] != 0 and v != s:
+            return v
 
-    for i, vertex in enumerate(N):
-        for j, edge in enumerate(vertex):
-            if edge == -1:
-                # If edge points outward the vertex, add its weight
-                for k in range(vertex_num):
-                    if N[k][j] == 1:
-                        # k is vertex to where the edge points
-                        G[i][k] = c[j]
-                        break
-
-    return G
+    return None
 
 
-def find_path(s, t, G):
-    """Finds path using depth first search.
+def find_path(s, t, cf, N, path=None):
+    """Finds path using recursive depth first search.
 
     Arguments:
         s -- Source vertex index.
         t -- Target(Sink) vertex index.
-        G -- Weighted matrix.
     """
+    #print("Source vertex:", s)
 
-    visited = np.zeros(G.shape[0], dtype="int")
-    stack = []
-    path = np.zeros(G.shape[0], dtype="int")
+    if path is None:
+        path = np.zeros(N.shape[1], dtype="int")
+    if s == t:
+        #print("FOUND END")
+        return path
 
-    # At the beginning, visit source
-    stack.append(s)
-    visited[s] = 1
+    for edge, incidence in enumerate(N[s]):
+        if incidence != 0:
+            # Edge connects to s
+            next_vertex = find_dest(edge, s, N)
 
-    while stack:
-        vertex = stack.pop(0)
-        for i, capacity in enumerate(G[vertex]):
-            if not visited[i] and capacity > 0:
-                stack.append(i)
-                visited[i] = 1
-                path[i] = vertex
-    return path if visited[t] else 0
+            if incidence == -1 and path[edge] == 0 and cf[edge] > 0:
+                path[edge] = 1
+                results = find_path(next_vertex, t, cf, N, path)
+                if results is not None:
+                    return results
+            elif incidence == 1 and path[edge] == 0 and cf[edge] == 0:
+                path[edge] = -1
+                results = find_path(next_vertex, t, cf, N, path)
+                if results is not None:
+                    return results
+    # Couldn't get to t
+    return None
+
+
+def find_min_flow(path, c):
+    min_flow = float("inf")
+
+    for i, edge in enumerate(path):
+        if edge != 0 and 0 < c[i] < min_flow:
+            min_flow = c[i]
+
+    return min_flow
+
+
+def update_flow(flow, path, min_flow):
+    for i, edge in enumerate(path):
+        if edge != 0:
+            flow[i] += min_flow * edge
+
+    return flow
+
+
+"""def find_cut(c, cf):
+    n_archs = c.shape[0]
+    cut = np.zeros(n_archs)
+    for edge in range(n_archs):
+        if cf[edge] == 0 and c[edge] != 0:
+            cut[edge] = 1
+
+    return cut
+"""
 
 
 def solve(c, N):
@@ -70,36 +99,36 @@ def solve(c, N):
         N -- Incidence matrix.
     """
 
-    # G combines the forward and backward residual capacities
-    G = create_weighted_matrix(c, N)
-    orig_G = np.copy(G)
-    flow = 0  # Total flow
-    s = 0  # Source
-    t = N.shape[0] - 1  # Target
+    # Number of archs(edges)
+    n_archs = N.shape[1]
+    # Source vertex
+    s = 0
+    # Sink vertex
+    t = N.shape[0] - 1
+    # Max flow in network
+    max_flow = 0
+    # Flow vector. At the beginning flow is not present.
+    flow = np.zeros(n_archs, dtype="int")
+    # Residual capacities
+    cf = np.copy(c)
 
-    path = find_path(s, t, G)
-    while np.count_nonzero(path):
-        path_flow = float("inf")
-        v = t
-        while v != s:
-            if G[path[v]][v] < path_flow:
-                path_flow = G[path[v]][v]
-            v = path[v]
+    path = find_path(s, t, cf, N)
 
-        flow += int(path_flow)
+    while path is not None:
+        # Find minimun flow for path
+        min_flow = find_min_flow(path, cf)
+        # Update total flow
+        max_flow += min_flow
+        # Update flows
+        flow = update_flow(flow, path, min_flow)
+        # Update residual capacities
+        cf = np.subtract(c, flow)
 
-        v = t
-        while v != s:
-            u = path[v]
-            G[u][v] -= path_flow
-            G[v][u] += path_flow
-            v = u
+        print(path)
+        print(flow)
+        print(c, "\n", sep="")
 
-        path = find_path(s, t, G)
+        # Find next path
+        path = find_path(s, t, cf, N)
 
-    print(flow)
-
-    for i in range(G.shape[0]):
-        for j in range(G.shape[1]):
-            if G[i][j] == 0 and orig_G[i][j] != 0:
-                print(i, "-", j, sep="")
+    print(max_flow)
