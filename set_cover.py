@@ -51,7 +51,7 @@ def get_covered(S, N, n_verts):
         n_verts -- Number of vertices in the problem.
     """
     N = np.transpose(N)
-    covered = np.zeros(n_verts)
+    covered = np.zeros(n_verts, dtype="int")
     for set_num in S:
         for i in range(n_verts):
             if N[set_num][i] == 1:
@@ -88,9 +88,9 @@ def solve(c, N):
     n_sets = N.shape[1]  # Number of sets
 
     S = []  # Sets that cover the elements
-    covered = np.zeros(n_verts)  # Covered vertices
-    x = np.zeros(n_verts)  # Dual solution
-    y = np.zeros(n_sets)  # Primal solution
+    covered = np.zeros(n_verts, dtype="int")  # Covered vertices
+    x = np.zeros(n_verts, dtype="int")  # Dual solution
+    y = np.zeros(n_sets, dtype="int")  # Primal solution
 
     # Set precision on float arrays to 3
     np.set_printoptions(precision=3)

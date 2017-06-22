@@ -183,7 +183,7 @@ def get_t_set(s_set):
     return t_set
 
 
-def find_minimun_cut(N, s_set):
+def find_minimum_cut(N, s_set):
     """Find minimum st-cut in the graph.
     
     Arguments:
@@ -247,7 +247,7 @@ def solve(c, N):
 
     while path is not None:
         path = convert_path(path, N)
-        # Find minimun flow for path
+        # Find minimum flow for path
         min_flow = find_min_flow(path, A, N)
         # Update total flow
         max_flow += min_flow
@@ -261,6 +261,6 @@ def solve(c, N):
         # Find next path
         path, s_set = find_path(s, t, A, N)
 
-    print(max_flow)
-    cut = find_minimun_cut(N, s_set)
-    print(cut)
+    print("Maximum flow:", max_flow)
+    min_cut = find_minimum_cut(N, s_set)
+    print("Minimum cut:", min_cut)
