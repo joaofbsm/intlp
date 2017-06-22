@@ -55,3 +55,4 @@ def read_file(file_path, algorithm):
 
 if __name__ == "__main__":
     main(sys.argv[1:])
+    

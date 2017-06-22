@@ -59,6 +59,7 @@ def get_covered(S, N, n_verts):
 
     return covered
 
+
 def calculate_cost(S, c):
     """Return the cost for the set cover.
     
@@ -111,4 +112,3 @@ def solve(c, N):
         print(y, "\n", x, "\n\n", sep="")
     cover_cost = calculate_cost(S, c)
     print("Set cover cost:", cover_cost)
-

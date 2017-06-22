@@ -10,9 +10,6 @@ __version__ = "3.0"
 import sys
 import numpy as np
 
-# TODO
-# - Implement return edge flow = -1 * edge flow
-
 def create_adjacency_matrix(c, N):
     """Creates matrix with weights based in arch capacity and arch connections.
     
@@ -41,12 +38,19 @@ def create_adjacency_matrix(c, N):
 def find_path(s, t, A, N):
     """Finds path using recursive depth first search.
 
+    Returns path if t is reachable and set of reachable vertices otherwise. The
+    path is the sequence of the indexes from visited vertices.
+
     Arguments:
         s -- Source vertex index.
         t -- Target(Sink) vertex index.
+        A -- Weighted adjacency matrix.
+        N -- Incidence matrix.
     """
 
+    # Visited vertex
     visited = np.zeros(N.shape[0], dtype="int")
+    # 
     stack = []
     path = np.zeros(N.shape[0], dtype="int")
 
@@ -54,37 +58,49 @@ def find_path(s, t, A, N):
     stack.append((s, [s]))
 
     while stack:
+        # Gets last element from the stack
         u, path = stack.pop()
         visited[u] = 1
         for v, capacity in enumerate(A[u]):
             if visited[v] == 0 and capacity > 0:
                 if v == t:
+                    # If found sink, return path to it
                     return path + [v], None
                 else:
+                    # Add connected vertex to the stack
                     stack.append((v, path + [v]))
 
+    # If t is unreachable, return set of reachable vertices
     return None, visited
 
 
 def find_edge(N, u, v):
-    """Convert adjacency edge to incidence edge number.
-    
-    [description]
+    """Find edge number for the edge between u and v.
+
+    Returns the edge index and its directions: 1 if from u to v and -1 
+    otherwise.
     
     Arguments:
-        A -- [description]
-        N -- [description]
-        u -- [description]
-        v -- [description]
+        N -- Incidence matrix.
+        u -- Vertex index for the first end of the edge.
+        v -- Vertex index for the second end of the edge.
     """
 
     for edge, incidence in enumerate(N[u]):
         if incidence != 0 and N[v][edge] != 0:
-            #print("Find edge -> u", u, "v", v, "edge", edge, "direction", N[v][edge])
             return edge, N[v][edge]
 
 
 def convert_path(path, N):
+    """Converts path from vertex list to list of edge presence on it.
+    
+    New path has 1 in edge index if edge is present and 0 if not.
+    
+    Arguments:
+        path -- Path as returned from find_path().
+        N -- Incidence matrix.
+    """
+
     new_path = np.zeros(N.shape[1], dtype="int")
     for i in range(len(path) - 1):
         u = path[i]
@@ -94,7 +110,17 @@ def convert_path(path, N):
 
     return new_path
 
+
 def ind_to_adj(N, A, edge, direction):
+    """Finds edge in incidence matrix and return adjacency coordinates for it.
+    
+    Arguments:
+        N -- Incidence matrix.
+        A -- Adjacency matrix.
+        edge -- Edge index.
+        direction -- Edge direction: 1 if from u to v and -1 otherwise.
+    """
+
     u = -1
     v = -1
     for i in range(N.shape[0]):
@@ -106,6 +132,14 @@ def ind_to_adj(N, A, edge, direction):
                 
 
 def find_min_flow(path, A, N):
+    """Returns the minimum flow in current path to t.
+
+    Arguments:
+        path -- Path as returned from convert_path().
+        A -- Weighted adjacency matrix.
+        N -- Incidence matrix.
+    """
+
     min_flow = float("inf")
     for edge, direction in enumerate(path):
         u, v = ind_to_adj(N, A, edge, direction)
@@ -116,6 +150,16 @@ def find_min_flow(path, A, N):
 
 
 def update_graph(N, A, flow, path, min_flow):
+    """Updates flows and capacities on the graph.
+    
+    Arguments:
+        N -- Incidence matrix.
+        A -- Weighted adjacency matrix.
+        flow -- Array of flows per edge.
+        path -- Path as returned from convert_path().
+        min_flow -- Minimum flow in the path.
+    """
+
     for edge, direction in enumerate(path):
         if direction != 0:
             flow[edge] += min_flow * direction
@@ -125,6 +169,12 @@ def update_graph(N, A, flow, path, min_flow):
 
 
 def get_t_set(s_set):
+    """Returns complementary set from s_set in the graph.
+    
+    Arguments:
+        s_set -- Array of indexes of vertices reachable from s.
+    """
+
     t_set = np.ones(s_set.shape[0], dtype="int")
     for v, present in enumerate(s_set):
         if present:
@@ -134,6 +184,13 @@ def get_t_set(s_set):
 
 
 def find_minimun_cut(N, s_set):
+    """Find minimum st-cut in the graph.
+    
+    Arguments:
+        N -- Incidence matrix.
+        s_set -- Array of indexes of vertices reachable from s.
+    """
+
     t_set = get_t_set(s_set)
     cut = np.zeros(N.shape[1], dtype="int")
     for v, present in enumerate(s_set):
@@ -144,6 +201,18 @@ def find_minimun_cut(N, s_set):
 
 
 def get_fringe_edges(N, v, t_set, cut):
+    """Get edges that departs from v and end in t_set and add then to the cut.
+    
+    Returns updated cut.
+
+    Arguments:
+        N -- Incidence matrix.
+        v -- Vertex inside s_set.
+        t_set -- Complement of s_set.
+        cut -- Array of edge indexes that has 1 if edge is part of the cut 
+               and 0 otherwise.
+    """
+
     for edge, incidence in enumerate(N[v]):
         if incidence:
             for vertex in range(N.shape[0]):
@@ -195,5 +264,3 @@ def solve(c, N):
     print(max_flow)
     cut = find_minimun_cut(N, s_set)
     print(cut)
-
-
