@@ -53,13 +53,13 @@ def find_path(s, t, G):
     visited[s] = 1
 
     while stack:
-        vertex = stack.pop()
+        vertex = stack.pop(0)
         for i, capacity in enumerate(G[vertex]):
             if not visited[i] and capacity > 0:
                 stack.append(i)
                 visited[i] = 1
                 path[i] = vertex
-    return path
+    return path if visited[t] else 0
 
 
 def solve(c, N):
