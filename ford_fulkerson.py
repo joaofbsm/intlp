@@ -124,8 +124,33 @@ def update_graph(N, A, flow, path, min_flow):
             A[v][u] += min_flow
 
 
+def get_t_set(s_set):
+    t_set = np.ones(s_set.shape[0], dtype="int")
+    for v, present in enumerate(s_set):
+        if present:
+            t_set[v] = 0
+
+    return t_set
 
 
+def find_minimun_cut(N, s_set):
+    t_set = get_t_set(s_set)
+    cut = np.zeros(N.shape[1], dtype="int")
+    for v, present in enumerate(s_set):
+        if present:
+            cut = get_fringe_edges(N, v, t_set, cut)
+
+    return cut
+
+
+def get_fringe_edges(N, v, t_set, cut):
+    for edge, incidence in enumerate(N[v]):
+        if incidence:
+            for vertex in range(N.shape[0]):
+                if N[vertex][edge] and t_set[vertex]:
+                    cut[edge] = 1
+
+    return cut
 
 
 def solve(c, N):
@@ -168,4 +193,7 @@ def solve(c, N):
         path, s_set = find_path(s, t, A, N)
 
     print(max_flow)
+    cut = find_minimun_cut(N, s_set)
+    print(cut)
+
 
