@@ -216,7 +216,7 @@ def get_fringe_edges(N, v, t_set, cut):
     for edge, incidence in enumerate(N[v]):
         if incidence:
             for vertex in range(N.shape[0]):
-                if N[vertex][edge] and t_set[vertex]:
+                if N[vertex][edge] == 1 and t_set[vertex]:
                     cut[edge] = 1
 
     return cut
