@@ -163,6 +163,8 @@ def update_graph(N, A, flow, path, min_flow):
     for edge, direction in enumerate(path):
         if direction != 0:
             flow[edge] += min_flow * direction
+            if flow[edge] < 0:
+                flow[edge] = flow[edge] * -1
             u, v = ind_to_adj(N, A, edge, direction)
             A[u][v] -= min_flow
             A[v][u] += min_flow
