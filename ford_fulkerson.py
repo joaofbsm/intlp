@@ -74,30 +74,36 @@ def find_path(s, t, A, N):
     return None, visited
 
 
-def find_edge(N, u, v):
+def find_edge(flow, A, N, u, v):
     """Find edge number for the edge between u and v.
 
     Returns the edge index and its directions: 1 if from u to v and -1 
     otherwise.
     
     Arguments:
+        flow -- Array of flows per edge.
+        A -- Weighted adjacency matrix.
         N -- Incidence matrix.
         u -- Vertex index for the first end of the edge.
         v -- Vertex index for the second end of the edge.
     """
 
     for edge, incidence in enumerate(N[u]):
-        if incidence != 0 and N[v][edge] != 0:
+        if incidence == -1 and N[v][edge] == 1 and A[u][v] > 0:
+            return edge, N[v][edge]
+        elif incidence == 1 and N[v][edge] == -1 and flow[edge] > 0:
             return edge, N[v][edge]
 
 
-def convert_path(path, N):
+def convert_path(path, flow, A, N):
     """Converts path from vertex list to list of edge presence on it.
     
     New path has 1 in edge index if edge is present and 0 if not.
     
     Arguments:
+        flow -- Array of flows per edge.
         path -- Path as returned from find_path().
+        A -- Weighted adjacency matrix.
         N -- Incidence matrix.
     """
 
@@ -105,7 +111,7 @@ def convert_path(path, N):
     for i in range(len(path) - 1):
         u = path[i]
         v = path[i + 1]
-        edge, direction = find_edge(N, u, v)
+        edge, direction = find_edge(flow, A, N, u, v)
         new_path[edge] = direction
 
     return new_path
@@ -163,8 +169,6 @@ def update_graph(N, A, flow, path, min_flow):
     for edge, direction in enumerate(path):
         if direction != 0:
             flow[edge] += min_flow * direction
-            if flow[edge] < 0:
-                flow[edge] = flow[edge] * -1
             u, v = ind_to_adj(N, A, edge, direction)
             A[u][v] -= min_flow
             A[v][u] += min_flow
@@ -248,7 +252,8 @@ def solve(c, N):
     path, s_set = find_path(s, t, A, N)
 
     while path is not None:
-        path = convert_path(path, N)
+        #print("path", path)
+        path = convert_path(path, flow, A, N)
         # Find minimum flow for path
         min_flow = find_min_flow(path, A, N)
         # Update total flow

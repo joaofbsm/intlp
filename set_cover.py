@@ -109,6 +109,6 @@ def solve(c, N):
         # Finds which vertex have been covered by the current collection
         covered = get_covered(S, N, n_verts)
         # Print solutions after every iteration
-        print(y, "\n", x, "\n\n", sep="")
+        print(y, "\n", x, "\n", sep="")
     cover_cost = calculate_cost(S, c)
     print("Set cover cost:", cover_cost)
