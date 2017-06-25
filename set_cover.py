@@ -89,7 +89,7 @@ def solve(c, N):
 
     S = []  # Sets that cover the elements
     covered = np.zeros(n_verts, dtype="int")  # Covered vertices
-    x = np.zeros(n_verts, dtype="int")  # Dual solution
+    x = np.zeros(n_verts)  # Dual solution
     y = np.zeros(n_sets, dtype="int")  # Primal solution
 
     # Set precision on float arrays to 3

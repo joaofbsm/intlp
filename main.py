@@ -39,8 +39,11 @@ def read_file(file_path, algorithm):
 
     # Get c vector with n entries as a numpy array
     string_list = f.readline().split(" ")[:n]
-    int_list = [int(x) for x in string_list]
-    c = np.asarray(int_list)
+    if algorithm == "set":
+        number_list = [float(x) for x in string_list]
+    elif algorithm == "flow":
+        number_list = [int(x) for x in string_list]
+    c = np.asarray(number_list)
 
     # Correlation/Incidence matrix N
     N = np.empty(shape=(m, n))

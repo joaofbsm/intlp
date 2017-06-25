@@ -50,7 +50,6 @@ def find_path(s, t, A, N):
 
     # Visited vertex
     visited = np.zeros(N.shape[0], dtype="int")
-    # 
     stack = []
     path = np.zeros(N.shape[0], dtype="int")
 
