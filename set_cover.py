@@ -34,7 +34,7 @@ def find_fit(vertex, c, N, x):
         if restriction[vertex] != 0:
             # If vertex takes part in the restriction
             slack = restriction[-1] - np.dot(restriction[:-1], x)
-            if slack < min_value:
+            if slack < min_value and slack > 0:
                 min_value = slack
                 set_num = i
         i += 1
@@ -94,7 +94,6 @@ def solve(c, N):
 
     # Set precision on float arrays to 3
     np.set_printoptions(precision=3)
-    
     while np.count_nonzero(covered) != n_verts:
         # Get uncovered element
         uncovered_vertex = np.where(covered==0)[0][0]
@@ -111,4 +110,4 @@ def solve(c, N):
         # Print solutions after every iteration
         print(y, "\n", x, "\n", sep="")
     cover_cost = calculate_cost(S, c)
-    print("Set cover cost:", cover_cost)
+    print("Set cover cost: {:.3g}".format(cover_cost))
